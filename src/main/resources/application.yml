@@ -1,0 +1,22 @@
+cloud:
+  aws:
+    credentials:
+      access-key: AKIAUNSLK6BFCSQW774A
+      secret-key: 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
+    region:
+      static: us-east-1
+    stack:
+      auto: false
+
+application:
+  bucket:
+    name: exam-secure
+
+
+spring:
+  servlet:
+    multipart:
+      enabled: true
+      file-size-threshold: 2MB
+      max-file-size: 5MB
+      max-request-size: 10MB
