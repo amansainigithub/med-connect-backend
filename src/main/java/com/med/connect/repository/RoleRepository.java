@@ -1,7 +1,7 @@
 package com.med.connect.repository;
 
+import com.med.connect.domain.Role;
 import com.med.connect.enums.ERole;
-import com.med.connect.models.Role;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

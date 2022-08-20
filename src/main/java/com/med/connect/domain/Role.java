@@ -1,4 +1,4 @@
-package com.med.connect.models;
+package com.med.connect.domain;
 
 import com.med.connect.enums.ERole;
 

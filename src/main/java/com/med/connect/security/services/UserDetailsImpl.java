@@ -1,7 +1,7 @@
 package com.med.connect.security.services;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.med.connect.models.User;
+import com.med.connect.domain.User;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;

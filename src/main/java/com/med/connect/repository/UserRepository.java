@@ -1,6 +1,6 @@
 package com.med.connect.repository;
 
-import com.med.connect.models.User;
+import com.med.connect.domain.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

@@ -14,7 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
-@RequestMapping(UrlMappings.BASE_URL)
+@RequestMapping(UrlMappings.ADMIN_BASE_URL)
 @Slf4j
 public class BucketController {
 
