@@ -1,9 +1,13 @@
 package com.med.connect.controllers;
 
+
+import com.med.connect.config.EmailConfiguration;
 import com.med.connect.constants.admin.UrlMappings;
 import com.med.connect.domain.Role;
 import com.med.connect.domain.User;
 import com.med.connect.enums.ERole;
+import com.med.connect.payload.request.ForgetPassword;
+import com.med.connect.payload.request.ForgetPasswordOtp;
 import com.med.connect.payload.request.LoginRequest;
 import com.med.connect.payload.request.SignupRequest;
 import com.med.connect.payload.response.JwtResponse;
@@ -12,7 +16,9 @@ import com.med.connect.repository.RoleRepository;
 import com.med.connect.repository.UserRepository;
 import com.med.connect.security.jwt.JwtUtils;
 import com.med.connect.security.services.UserDetailsImpl;
+import com.med.connect.utils.ResponseGenerator;
 import io.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -22,14 +28,16 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @RestController
 @ApiOperation("Api for Authentication")
+@Slf4j
 @RequestMapping(UrlMappings.AUTH_BASE_URL)
 public class AuthController {
   @Autowired
@@ -46,6 +54,8 @@ public class AuthController {
 
   @Autowired
   private JwtUtils jwtUtils;
+
+  private HttpSession session;
 
   @PostMapping(UrlMappings.SIGN_IN)
   @ApiOperation(value = "Api for Authenticate")
@@ -136,7 +146,7 @@ public class AuthController {
   @ApiOperation(value = "Api for Authenticate SignUp User Public")
   public ResponseEntity<?> signUpUser(@Valid @RequestBody SignupRequest signUpRequest) {
 
-    System.out.println("rrrrrrrrrrrrrrrrrrrrr"+signUpRequest.getRole());
+
     if (userRepository.existsByUsername(signUpRequest.getUsername())) {
       return ResponseEntity
               .badRequest()
@@ -215,6 +225,173 @@ public class AuthController {
             userDetails.getEmail(),
             roles));
   }
+
+
+
+  //##################################### FORGET PASSWORD ############################################
+  @PostMapping(UrlMappings.FORGOT_PASSWORD)
+  @ApiOperation(value = "Api for forget password")
+  public ResponseEntity<?> forgotPassword(@Valid @RequestBody ForgetPassword forgetPassword, HttpServletRequest request) {
+          try {
+              this.session  = request.getSession();
+            if(forgetPassword.getEmail() == null || forgetPassword.getEmail().isEmpty())
+            {
+              return ResponseEntity
+                      .badRequest()
+                      .body(new MessageResponse("Please Enter Correct email id : " + forgetPassword.getEmail()));
+            }
+
+            Optional<User> optional =  this.userRepository.findByEmail(forgetPassword.getEmail());
+            if(!optional.isPresent())
+            {
+              return ResponseEntity
+                      .badRequest()
+                      .body(new MessageResponse("email-id Not Found : " + forgetPassword.getEmail()));
+            }
+            else {
+              //  IF EMAIL ID IS FOUND
+
+               //String randUuId = UUID.randomUUID().toString();
+              String otp = String.format("%04d", new Random().nextInt(10000));
+
+              //set session to key and userName
+               session.setAttribute(optional.get().getEmail() , otp );
+
+              //Send Email
+              EmailConfiguration.sendEmail("ishumessi2@gmail.com",otp);
+
+              System.out.println("After otp");
+              System.out.println(session.getAttribute(forgetPassword.getEmail()));
+
+              return ResponseEntity.ok(new MessageResponse("success"));
+            }
+          }
+          catch (Exception e)
+          {
+              e.getStackTrace();
+              return ResponseGenerator.generateBadRequestResponse(e.getMessage());
+          }
+  }
+
+
+
+
+  @PostMapping(UrlMappings.FORGOT_PASSWORD_OTP_VERIFY)
+  @ApiOperation(value = "Api for OTP VERIFY and forget password ")
+  public ResponseEntity<?> forgotPasswordOtpVerify(@Valid @RequestBody ForgetPasswordOtp forgetPasswordOtp, HttpServletRequest request) {
+    try {
+      System.out.println(forgetPasswordOtp.toString());
+      if(forgetPasswordOtp.getOtp() == null || forgetPasswordOtp.getOtp().isEmpty()
+         ||  forgetPasswordOtp.getEmail() == null || forgetPasswordOtp.getEmail().isEmpty()
+      || forgetPasswordOtp.getNewPassword()== null || forgetPasswordOtp .getConformPassword().isEmpty()
+              || forgetPasswordOtp.getConformPassword() == null || forgetPasswordOtp.getConformPassword().isEmpty())
+      {
+        return ResponseEntity
+                .badRequest()
+                .body(new MessageResponse("Field is Mandatory !!!"));
+      }
+
+
+      if(!forgetPasswordOtp.getNewPassword().equals(forgetPasswordOtp.getConformPassword()))
+      {
+        return ResponseEntity
+                .badRequest()
+                .body(new MessageResponse("Password not matched !!!"));
+      }
+
+       String sessionOtp =  (String)session.getAttribute(forgetPasswordOtp.getEmail());
+       log.info("sessionOtp ::::::::::::  {} " + sessionOtp );
+
+      if(sessionOtp.equals(forgetPasswordOtp.getOtp()) && forgetPasswordOtp.getNewPassword().equals(forgetPasswordOtp.getConformPassword())) {
+
+        log.info("OTP IS VERIFIED ::::::::::::::::::::: {} :: = >  Success ");
+        log.info("password and conform password is matched success::::::::::::  {} ");
+
+        User user =  this.userRepository.findByEmail(forgetPasswordOtp.getEmail()).orElseThrow(()-> new UsernameNotFoundException("User Not found !!"));
+
+        user.setPassword(encoder.encode(forgetPasswordOtp.getConformPassword()));
+
+        this.userRepository.save(user);
+
+        //removing session value
+        session.removeAttribute(forgetPasswordOtp.getEmail());
+
+        //Checking session value is found
+        if(session.getAttribute(forgetPasswordOtp.getEmail()) != null)
+        {
+          log.info("Session Value Not removed  :::: {} :: = >  Failed ");
+        }
+        else {
+          log.info("session value is successfully removed :::: {} :: = >  Success ");
+        }
+
+        return ResponseEntity.ok(new MessageResponse("Password Changed Success"));
+      }
+      else {
+        return ResponseEntity
+                .badRequest()
+                .body(new MessageResponse("something went wrong !!!"));
+      }
+    }
+    catch (Exception e)
+    {
+      e.getStackTrace();
+      return ResponseGenerator.generateBadRequestResponse(e.getMessage());
+    }
+  }
+
+
+//  @PostMapping(UrlMappings.CHANGE_FORGOT_PASSWORD)
+//  @ApiOperation(value = "Api for change forget password")
+//  public ResponseEntity<?> forgotPasswordOtpVerify(@Valid @RequestBody ForgetPasswordOtp forgetPasswordOtp) {
+//    try {
+//      if(forgetPasswordOtp.getOtp() == null || forgetPasswordOtp.getOtp().isEmpty()
+//              ||  forgetPasswordOtp.getEmail() == null || forgetPasswordOtp.getEmail().isEmpty()
+//              || forgetPasswordOtp.getPassword()== null || forgetPasswordOtp .getConformPassword().isEmpty()
+//              || forgetPasswordOtp.getConformPassword()== null || forgetPasswordOtp.getConformPassword().isEmpty())
+//      {
+//        return ResponseEntity
+//                .badRequest()
+//                .body(new MessageResponse("Field is Mandatory !!!"));
+//      }
+//
+//      if(!forgetPasswordOtp.getPassword().equals(forgetPasswordOtp.getConformPassword()))
+//      {
+//        return ResponseEntity
+//                .badRequest()
+//                .body(new MessageResponse("Password not matched !!!"));
+//      }
+//
+//      String sessionOtp =  (String)session.getAttribute(forgetPasswordOtp.getEmail());
+//      log.info("sessionOtp ::::::::::::  {} " + sessionOtp );
+//
+//      if(sessionOtp.equals(forgetPasswordOtp.getOtp()) && forgetPasswordOtp.getPassword().equals(forgetPasswordOtp.getConformPassword())) {
+//
+//           log.info("OTP IS VERIFIED ::::::::::::::::::::: {} :: = >  Success ");
+//          log.info("password and conform password is matched success::::::::::::  {} ");
+//
+//          User user =  this.userRepository.findByEmail(forgetPasswordOtp.getEmail()).orElseThrow(()-> new UsernameNotFoundException("User Not found !!"));
+//
+//          user.setPassword(encoder.encode(forgetPasswordOtp.getConformPassword()));
+//
+//          this.userRepository.save(user);
+//          return ResponseEntity.ok(new MessageResponse("Password Changed Success"));
+//      }
+//      else {
+//        return ResponseEntity
+//                .badRequest()
+//                .body(new MessageResponse("something went wrong !!!"));
+//      }
+//    }
+//    catch (Exception e)
+//    {
+//      e.getStackTrace();
+//      return ResponseGenerator.generateBadRequestResponse(e.getMessage());
+//    }
+//  }
+//
+//
+//
 
 
 

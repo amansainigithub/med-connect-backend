@@ -16,6 +16,13 @@ public class UrlMappings {
     public static final String SIGN_UP_USER = "/signUpUser";
     public static final String SIGN_IN_USER = "/signInUser";
 
+    public static final String FORGOT_PASSWORD = "/forgotPassword";
+
+    public static final String FORGOT_PASSWORD_OTP_VERIFY = "/forgotPasswordOtpVerify";
+
+    public static final String CHANGE_FORGOT_PASSWORD= "/changeForgetPassword";
+
+
 
 
 
