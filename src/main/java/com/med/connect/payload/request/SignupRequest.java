@@ -1,5 +1,7 @@
 package com.med.connect.payload.request;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
@@ -9,6 +11,14 @@ public class SignupRequest {
   @NotBlank
   @Size(min = 3, max = 20)
   private String username;
+
+  @NotBlank
+  @Size(min = 3, max = 20)
+  private String firstname;
+
+  @NotBlank
+  @Size(min = 3, max = 20)
+  private String surname;
 
   @NotBlank
   @Size(max = 50)
@@ -51,5 +61,22 @@ public class SignupRequest {
 
   public void setRole(Set<String> role) {
     this.role = role;
+  }
+
+
+  public String getSurname() {
+    return surname;
+  }
+
+  public void setSurname(String surname) {
+    this.surname = surname;
+  }
+
+  public String getFirstname() {
+    return firstname;
+  }
+
+  public void setFirstname(String firstname) {
+    this.firstname = firstname;
   }
 }

@@ -18,8 +18,16 @@ public class User {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
+
   @NotBlank
   @Size(max = 20)
+  private String firstname;
+
+  @NotBlank
+  @Size(max = 20)
+  private String surname;
+  @NotBlank
+  @Size(max = 200)
   private String username;
 
   @NotBlank
@@ -94,5 +102,22 @@ public class User {
 
   public void setEmailVerified(Boolean emailVerified) {
     this.emailVerified = emailVerified;
+  }
+
+
+  public String getFirstname() {
+    return firstname;
+  }
+
+  public void setFirstname(String firstname) {
+    this.firstname = firstname;
+  }
+
+  public String getSurname() {
+    return surname;
+  }
+
+  public void setSurname(String surname) {
+    this.surname = surname;
   }
 }

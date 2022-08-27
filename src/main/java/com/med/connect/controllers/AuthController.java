@@ -6,10 +6,8 @@ import com.med.connect.constants.admin.UrlMappings;
 import com.med.connect.domain.Role;
 import com.med.connect.domain.User;
 import com.med.connect.enums.ERole;
-import com.med.connect.payload.request.ForgetPassword;
-import com.med.connect.payload.request.ForgetPasswordOtp;
-import com.med.connect.payload.request.LoginRequest;
-import com.med.connect.payload.request.SignupRequest;
+import com.med.connect.helper.GenerateUniqueUserNameViaPublic;
+import com.med.connect.payload.request.*;
 import com.med.connect.payload.response.JwtResponse;
 import com.med.connect.payload.response.MessageResponse;
 import com.med.connect.repository.RoleRepository;
@@ -55,6 +53,9 @@ public class AuthController {
   @Autowired
   private JwtUtils jwtUtils;
 
+  @Autowired
+  private GenerateUniqueUserNameViaPublic generateUniqueUserNameViaPublic;
+
   private HttpSession session;
 
   @PostMapping(UrlMappings.SIGN_IN)
@@ -97,6 +98,10 @@ public class AuthController {
     User user = new User(signUpRequest.getUsername(),
                signUpRequest.getEmail(),
                encoder.encode(signUpRequest.getPassword()));
+
+    user.setFirstname(signUpRequest.getFirstname());
+    user.setSurname(signUpRequest.getSurname());
+
 
     Set<String> strRoles = signUpRequest.getRole();
     Set<Role> roles = new HashSet<>();
@@ -144,27 +149,39 @@ public class AuthController {
   //########  SIGN UP USER IN PUBLIC VIA ROLE --> NORMAL-USER , DOCTOR , STUDENT  ##########
   @PostMapping(UrlMappings.SIGN_UP_USER)
   @ApiOperation(value = "Api for Authenticate SignUp User Public")
-  public ResponseEntity<?> signUpUser(@Valid @RequestBody SignupRequest signUpRequest) {
+  public ResponseEntity<?> signUpUser(@Valid @RequestBody SignUpRequestPublic  signUpRequestPublic) {
+
+    System.out.println(signUpRequestPublic);
+    System.out.println("**************************");
 
 
-    if (userRepository.existsByUsername(signUpRequest.getUsername())) {
-      return ResponseEntity
-              .badRequest()
-              .body(new MessageResponse("Error: Username is already taken!"));
-    }
+    String userName =  this.generateUniqueUserNameViaPublic.generateUniqueUserNameViaPublic(signUpRequestPublic);
 
-    if (userRepository.existsByEmail(signUpRequest.getEmail())) {
+    //Set UserName
+    signUpRequestPublic.setUsername(userName);
+
+    if (userRepository.existsByEmail(signUpRequestPublic.getEmail())) {
       return ResponseEntity
               .badRequest()
               .body(new MessageResponse("Error: Email is already in use!"));
     }
 
-    // Create new user's account
-    User user = new User(signUpRequest.getUsername(),
-            signUpRequest.getEmail(),
-            encoder.encode(signUpRequest.getPassword()));
+    if (userRepository.existsByUsername(signUpRequestPublic.getUsername())) {
+      return ResponseEntity
+              .badRequest()
+              .body(new MessageResponse("Error: Username is already taken!"));
+    }
 
-    Set<String> strRoles = signUpRequest.getRole();
+
+    // Create new user's account
+    User user = new User(signUpRequestPublic.getUsername(),
+                  signUpRequestPublic.getEmail(),
+                  encoder.encode(signUpRequestPublic.getPassword()));
+
+    user.setFirstname(signUpRequestPublic.getFirstname());
+    user.setSurname(signUpRequestPublic.getSurname());
+
+    Set<String> strRoles = signUpRequestPublic.getRole();
     Set<Role> roles = new HashSet<>();
 
     if (strRoles == null) {
@@ -256,6 +273,9 @@ public class AuthController {
 
               //set session to key and userName
                session.setAttribute(optional.get().getEmail() , otp );
+
+               //Session Expire in 10 minutes..
+               session.setMaxInactiveInterval(10 * 60);
 
               //Send Email
               EmailConfiguration.sendEmail("ishumessi2@gmail.com",otp);
