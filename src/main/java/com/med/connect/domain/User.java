@@ -1,9 +1,12 @@
 package com.med.connect.domain;
 
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 import javax.persistence.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -42,6 +45,22 @@ public class User {
   private Boolean emailVerified = Boolean.FALSE;
 
   private String emailToken;
+
+  private String userAgent;
+
+  private String operatingSystem;
+
+  private String browser;
+
+  private boolean isActive = Boolean.FALSE ;
+
+  @Column(nullable = false, updatable = false)
+  @CreationTimestamp
+  private LocalDateTime creationDate;
+
+  @Column(nullable = false, updatable = true)
+  @UpdateTimestamp
+  private LocalDateTime lastModifiedDate;
 
   @ManyToMany(fetch = FetchType.LAZY)
   @JoinTable(name = "user_roles",
@@ -129,5 +148,53 @@ public class User {
 
   public void setEmailToken(String emailToken) {
     this.emailToken = emailToken;
+  }
+
+  public boolean isActive() {
+    return isActive;
+  }
+
+  public void setActive(boolean active) {
+    isActive = active;
+  }
+
+  public LocalDateTime getCreationDate() {
+    return creationDate;
+  }
+
+  public void setCreationDate(LocalDateTime creationDate) {
+    this.creationDate = creationDate;
+  }
+
+  public LocalDateTime getLastModifiedDate() {
+    return lastModifiedDate;
+  }
+
+  public void setLastModifiedDate(LocalDateTime lastModifiedDate) {
+    this.lastModifiedDate = lastModifiedDate;
+  }
+
+  public String getUserAgent() {
+    return userAgent;
+  }
+
+  public void setUserAgent(String userAgent) {
+    this.userAgent = userAgent;
+  }
+
+  public String getOperatingSystem() {
+    return operatingSystem;
+  }
+
+  public void setOperatingSystem(String operatingSystem) {
+    this.operatingSystem = operatingSystem;
+  }
+
+  public String getBrowser() {
+    return browser;
+  }
+
+  public void setBrowser(String browser) {
+    this.browser = browser;
   }
 }

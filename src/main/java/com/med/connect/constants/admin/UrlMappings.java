@@ -24,7 +24,7 @@ public class UrlMappings {
 
     public static final String VERIFY_TOKEN_EMAIL = "/verifyTokenEmail";
 
-    public static final String RESEND_EMAIL_LINK = "/resendEmailLink/{email}";
+    public static final String RESEND_EMAIL_LINK = "/resendEmailLink/{username}";
 
 
 

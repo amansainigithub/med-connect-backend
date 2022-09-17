@@ -8,6 +8,7 @@ import com.med.connect.domain.Role;
 import com.med.connect.domain.User;
 import com.med.connect.enums.ERole;
 import com.med.connect.helper.GenerateUniqueUserNameViaPublic;
+import com.med.connect.helper.OsInformation;
 import com.med.connect.payload.request.*;
 import com.med.connect.payload.response.JwtResponse;
 import com.med.connect.payload.response.MessageResponse;
@@ -143,6 +144,8 @@ public class AuthController {
     user.setRoles(roles);
     userRepository.save(user);
 
+
+
     return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
   }
 
@@ -156,7 +159,7 @@ public class AuthController {
   //########  SIGN UP USER IN PUBLIC VIA ROLE --> NORMAL-USER , DOCTOR , STUDENT  ##########
   @PostMapping(UrlMappings.SIGN_UP_USER)
   @ApiOperation(value = "Api for Authenticate SignUp User Public")
-  public ResponseEntity<?> signUpUser(@Valid @RequestBody SignUpRequestPublic  signUpRequestPublic) {
+  public ResponseEntity<?> signUpUser(@Valid @RequestBody SignUpRequestPublic  signUpRequestPublic , HttpServletRequest request) {
     String userName =  this.generateUniqueUserNameViaPublic.generateUniqueUserNameViaPublic(signUpRequestPublic);
 
     //Set UserName
@@ -214,6 +217,9 @@ public class AuthController {
     }
 
     user.setRoles(roles);
+
+    //Save OS Details [Operating System Details]
+    OsInformation.getUserOS(request,user);
 
     //Generate Email Token
     String token = GenerateUniqueUserNameViaPublic.generateUUID();
@@ -427,19 +433,29 @@ public class AuthController {
           //#######################    RESEND EMAIL LINK #############################
 
   //########## EMAIL VARIFICATION TOKEN###########
-  @GetMapping(UrlMappings.RESEND_EMAIL_LINK)
-  @ApiOperation(value = "Verify Token Email")
-  public ResponseEntity<?> resendEmailLink(@PathVariable String email , HttpServletResponse response) {
-    log.info("EMAIL       :::::::::  " + email);
+  @PostMapping(UrlMappings.RESEND_EMAIL_LINK)
+  @ApiOperation(value = "Resend Email Link")
+  public ResponseEntity<?> resendEmailLink(@Valid @PathVariable String  username , HttpServletResponse response) {
+        log.info("EMAIL  ::::::::::::  " + username);
 
-    if(email.trim() == null || email.trim().isEmpty())
-    {
-      return ResponseEntity
-              .badRequest()
-              .body(new MessageResponse("Token is Empty | Something went wrong"));
-    }
+        if(username.trim() == null || username.trim().isEmpty())
+        {
+          return ResponseEntity
+                  .badRequest()
+                  .body(new MessageResponse("Token is Empty | Something went wrong"));
+        }
 
-        User currentUser = this.userRepository.findByEmail(email).orElseThrow(()-> new UsernameNotFoundException("User Not Found Here"));
+
+        User currentUser = this.userRepository.findByEmail(username).orElseThrow(()-> new UsernameNotFoundException("User Not Found Here"));
+
+        //Check If Email Id is Already Verified
+
+        if(!currentUser.getEmailVerified())
+        {
+          return ResponseEntity
+                  .badRequest()
+                  .body(new MessageResponse("Email id is Already Verified !!"));
+        }
 
         //generate New Token
         String token =  GenerateUniqueUserNameViaPublic.generateUUID();
@@ -462,59 +478,6 @@ public class AuthController {
   }
 
 
-
-
-//  @PostMapping(UrlMappings.CHANGE_FORGOT_PASSWORD)
-//  @ApiOperation(value = "Api for change forget password")
-//  public ResponseEntity<?> forgotPasswordOtpVerify(@Valid @RequestBody ForgetPasswordOtp forgetPasswordOtp) {
-//    try {
-//      if(forgetPasswordOtp.getOtp() == null || forgetPasswordOtp.getOtp().isEmpty()
-//              ||  forgetPasswordOtp.getEmail() == null || forgetPasswordOtp.getEmail().isEmpty()
-//              || forgetPasswordOtp.getPassword()== null || forgetPasswordOtp .getConformPassword().isEmpty()
-//              || forgetPasswordOtp.getConformPassword()== null || forgetPasswordOtp.getConformPassword().isEmpty())
-//      {
-//        return ResponseEntity
-//                .badRequest()
-//                .body(new MessageResponse("Field is Mandatory !!!"));
-//      }
-//
-//      if(!forgetPasswordOtp.getPassword().equals(forgetPasswordOtp.getConformPassword()))
-//      {
-//        return ResponseEntity
-//                .badRequest()
-//                .body(new MessageResponse("Password not matched !!!"));
-//      }
-//
-//      String sessionOtp =  (String)session.getAttribute(forgetPasswordOtp.getEmail());
-//      log.info("sessionOtp ::::::::::::  {} " + sessionOtp );
-//
-//      if(sessionOtp.equals(forgetPasswordOtp.getOtp()) && forgetPasswordOtp.getPassword().equals(forgetPasswordOtp.getConformPassword())) {
-//
-//           log.info("OTP IS VERIFIED ::::::::::::::::::::: {} :: = >  Success ");
-//          log.info("password and conform password is matched success::::::::::::  {} ");
-//
-//          User user =  this.userRepository.findByEmail(forgetPasswordOtp.getEmail()).orElseThrow(()-> new UsernameNotFoundException("User Not found !!"));
-//
-//          user.setPassword(encoder.encode(forgetPasswordOtp.getConformPassword()));
-//
-//          this.userRepository.save(user);
-//          return ResponseEntity.ok(new MessageResponse("Password Changed Success"));
-//      }
-//      else {
-//        return ResponseEntity
-//                .badRequest()
-//                .body(new MessageResponse("something went wrong !!!"));
-//      }
-//    }
-//    catch (Exception e)
-//    {
-//      e.getStackTrace();
-//      return ResponseGenerator.generateBadRequestResponse(e.getMessage());
-//    }
-//  }
-//
-//
-//
 
 
 
