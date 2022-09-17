@@ -22,6 +22,12 @@ public class UrlMappings {
 
     public static final String CHANGE_FORGOT_PASSWORD= "/changeForgetPassword";
 
+    public static final String VERIFY_TOKEN_EMAIL = "/verifyTokenEmail";
+
+    public static final String RESEND_EMAIL_LINK = "/resendEmailLink/{email}";
+
+
+
 
 
 

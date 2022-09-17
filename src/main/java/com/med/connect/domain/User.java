@@ -41,6 +41,8 @@ public class User {
 
   private Boolean emailVerified = Boolean.FALSE;
 
+  private String emailToken;
+
   @ManyToMany(fetch = FetchType.LAZY)
   @JoinTable(name = "user_roles",
           joinColumns = @JoinColumn(name = "user_id"),
@@ -119,5 +121,13 @@ public class User {
 
   public void setSurname(String surname) {
     this.surname = surname;
+  }
+
+  public String getEmailToken() {
+    return emailToken;
+  }
+
+  public void setEmailToken(String emailToken) {
+    this.emailToken = emailToken;
   }
 }

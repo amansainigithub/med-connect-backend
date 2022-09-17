@@ -97,6 +97,9 @@ public class MessageResponse {
 
     public static final String BORN_CATEGORY_WITH_SIZE_SUCCESS= "Born category with sizes saved success";
 
+    public static final String TOKEN_IS_EMPTY= "TOKEN IS EMPTY";
+
+
 
 
 }

@@ -2,6 +2,7 @@ package com.med.connect.controllers;
 
 
 import com.med.connect.config.EmailConfiguration;
+import com.med.connect.config.SimpleEmailConfiguration;
 import com.med.connect.constants.admin.UrlMappings;
 import com.med.connect.domain.Role;
 import com.med.connect.domain.User;
@@ -19,6 +20,8 @@ import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -28,6 +31,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 import java.util.*;
@@ -52,6 +56,9 @@ public class AuthController {
 
   @Autowired
   private JwtUtils jwtUtils;
+
+  @Autowired
+  private SimpleEmailConfiguration simpleEmailConfiguration;
 
   @Autowired
   private GenerateUniqueUserNameViaPublic generateUniqueUserNameViaPublic;
@@ -150,11 +157,6 @@ public class AuthController {
   @PostMapping(UrlMappings.SIGN_UP_USER)
   @ApiOperation(value = "Api for Authenticate SignUp User Public")
   public ResponseEntity<?> signUpUser(@Valid @RequestBody SignUpRequestPublic  signUpRequestPublic) {
-
-    System.out.println(signUpRequestPublic);
-    System.out.println("**************************");
-
-
     String userName =  this.generateUniqueUserNameViaPublic.generateUniqueUserNameViaPublic(signUpRequestPublic);
 
     //Set UserName
@@ -212,9 +214,21 @@ public class AuthController {
     }
 
     user.setRoles(roles);
+
+    //Generate Email Token
+    String token = GenerateUniqueUserNameViaPublic.generateUUID();
+
+    user.setEmailToken(token);
     userRepository.save(user);
 
-    return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
+    //Creating Email Verify Email Link
+    String emailVerifyLink = "<a href=http://localhost:8080/med-connect/api/auth/verifyTokenEmail?user="+user.getEmail()+"&token="+token+">Conformation Link </a>";
+
+    //Send Email Conformation Link
+    this.simpleEmailConfiguration.sendSimpleEmail(user.getEmail(),emailVerifyLink , "Please Conform your Email");
+
+    log.info("::::::::: {}     User registered successfully ! But Email Verify is Mandatory !!! ");
+    return ResponseEntity.ok(new MessageResponse("User registered successfully ! But Email Verify is Mandatory !!! "));
   }
 
 
@@ -224,6 +238,11 @@ public class AuthController {
   public ResponseEntity<?> signInUser(@Valid @RequestBody LoginRequest loginRequest) {
     User user =  userRepository.findByEmail(loginRequest.getUsername())
                           .orElseThrow(()-> new UsernameNotFoundException("Uer Not Found user : " + loginRequest.getUsername()));
+
+    if(!user.getEmailVerified())
+    {
+      throw new RuntimeException("Email Not Verify ! Please Verify your Email-Id");
+    }
 
     Authentication authentication = authenticationManager.authenticate(
             new UsernamePasswordAuthenticationToken(user.getUsername(), loginRequest.getPassword()));
@@ -303,8 +322,8 @@ public class AuthController {
       System.out.println(forgetPasswordOtp.toString());
       if(forgetPasswordOtp.getOtp() == null || forgetPasswordOtp.getOtp().isEmpty()
          ||  forgetPasswordOtp.getEmail() == null || forgetPasswordOtp.getEmail().isEmpty()
-      || forgetPasswordOtp.getNewPassword()== null || forgetPasswordOtp .getConformPassword().isEmpty()
-              || forgetPasswordOtp.getConformPassword() == null || forgetPasswordOtp.getConformPassword().isEmpty())
+         || forgetPasswordOtp.getNewPassword()== null || forgetPasswordOtp .getConformPassword().isEmpty()
+         || forgetPasswordOtp.getConformPassword() == null || forgetPasswordOtp.getConformPassword().isEmpty())
       {
         return ResponseEntity
                 .badRequest()
@@ -359,6 +378,90 @@ public class AuthController {
       return ResponseGenerator.generateBadRequestResponse(e.getMessage());
     }
   }
+
+
+
+  //########## EMAIL VARIFICATION TOKEN###########
+  @GetMapping(UrlMappings.VERIFY_TOKEN_EMAIL)
+  @ApiOperation(value = "Verify Token Email")
+  public ResponseEntity<?> forgotPassword(@RequestParam String user , @RequestParam String token , HttpServletResponse response) {
+          log.info("USER       :::::::::  " + user);
+          log.info("TOKEN      :::::::::   " + token);
+
+          if(token.trim() == null || token.trim().isEmpty())
+          {
+            return ResponseEntity
+                    .badRequest()
+                    .body(new MessageResponse("Token is Empty | Something went wrong"));
+          }
+
+          //get User By Token
+          User currentUser =  this.userRepository.findByEmailToken(token.trim()).orElseThrow(()-> new UsernameNotFoundException("Token Not found !!"));
+
+          if(currentUser.getEmailToken().equals(token.trim()))
+          {
+                currentUser.setEmailVerified(true);
+
+                //save User is email verified
+                this.userRepository.save(currentUser);
+
+                try {
+                  log.info(":::::::::::::::::    re-direct To success Page" );
+                  response.sendRedirect("http://localhost:4200/email-verify-success");
+                }
+                catch (Exception e)
+                {
+                    e.printStackTrace();
+                }
+
+                return ResponseEntity.ok().body(new MessageResponse("Email is Verified successfully"));
+          }
+
+             return ResponseEntity
+                      .badRequest()
+                      .body(new MessageResponse("Token is Empty | Something went wrong"));
+          }
+
+
+
+          //#######################    RESEND EMAIL LINK #############################
+
+  //########## EMAIL VARIFICATION TOKEN###########
+  @GetMapping(UrlMappings.RESEND_EMAIL_LINK)
+  @ApiOperation(value = "Verify Token Email")
+  public ResponseEntity<?> resendEmailLink(@PathVariable String email , HttpServletResponse response) {
+    log.info("EMAIL       :::::::::  " + email);
+
+    if(email.trim() == null || email.trim().isEmpty())
+    {
+      return ResponseEntity
+              .badRequest()
+              .body(new MessageResponse("Token is Empty | Something went wrong"));
+    }
+
+        User currentUser = this.userRepository.findByEmail(email).orElseThrow(()-> new UsernameNotFoundException("User Not Found Here"));
+
+        //generate New Token
+        String token =  GenerateUniqueUserNameViaPublic.generateUUID();
+
+        //Set Token
+        currentUser.setEmailToken(token);
+
+        //save User is email verified
+        this.userRepository.save(currentUser);
+
+      //Creating Email Verify Email Link
+      String emailVerifyLink = "<a href=http://localhost:8080/med-connect/api/auth/verifyTokenEmail?user="+currentUser.getEmail()+"&token="+token+">Conformation Link </a>";
+
+      //Send Email Conformation Link
+      this.simpleEmailConfiguration.sendSimpleEmail(currentUser.getEmail(),emailVerifyLink , "Please Conform your Email");
+
+      log.info("::::::::: {}     User registered successfully ! But Email Verify is Mandatory !!! ");
+      return ResponseEntity.ok(new MessageResponse("Email link Resend successfully "));
+
+  }
+
+
 
 
 //  @PostMapping(UrlMappings.CHANGE_FORGOT_PASSWORD)

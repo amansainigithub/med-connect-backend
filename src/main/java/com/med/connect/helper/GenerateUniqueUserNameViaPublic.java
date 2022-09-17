@@ -4,6 +4,8 @@ import com.med.connect.payload.request.SignUpRequestPublic;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import java.util.UUID;
+
 @Slf4j
 @Component
 public class GenerateUniqueUserNameViaPublic {
@@ -40,6 +42,13 @@ public class GenerateUniqueUserNameViaPublic {
                     .charAt(index));
         }
         return sb.toString();
+    }
+
+
+    public static String generateUUID()
+    {
+        log.info("Generating UUID ::::: {} 0");
+        return UUID.randomUUID().toString();
     }
 
 }

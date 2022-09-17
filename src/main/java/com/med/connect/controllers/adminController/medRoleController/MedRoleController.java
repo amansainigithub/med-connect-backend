@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(UrlMappings.ADMIN_BASE_URL)
 @Slf4j
 @RestController
-@Api("Api for  Med Role")
+@Api("Api for Med Role")
 public class MedRoleController {
 
 
