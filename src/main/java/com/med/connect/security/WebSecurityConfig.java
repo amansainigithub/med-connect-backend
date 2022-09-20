@@ -3,6 +3,7 @@ package com.med.connect.security;
 import com.med.connect.security.jwt.AuthEntryPointJwt;
 import com.med.connect.security.jwt.AuthTokenFilter;
 import com.med.connect.security.services.UserDetailsServiceImpl;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -71,5 +72,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                     "/**/*.js").permitAll()
       .anyRequest().authenticated();
     http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
+  }
+
+  @Bean
+  public ModelMapper getModelMapper()
+  {
+    return new ModelMapper();
   }
 }

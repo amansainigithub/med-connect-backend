@@ -32,7 +32,6 @@ public class UrlMappings {
 
 
 
-
     //############## VERSION #####################
     public static final String VERSION_URL =  "/api/v1";
 
@@ -58,4 +57,8 @@ public class UrlMappings {
     //################# MED ROLES #######################
     public static final String GET_MED_ROLES = "/getMedRoles";
 
+
+
+    //#################GET USERS LIST #######################
+    public static final String GET_USER_LIST=  "/getUserList";
 }

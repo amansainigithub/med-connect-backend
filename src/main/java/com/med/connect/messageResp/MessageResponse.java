@@ -99,6 +99,9 @@ public class MessageResponse {
 
     public static final String TOKEN_IS_EMPTY= "TOKEN IS EMPTY";
 
+    public static final String USER_FETCH_SUCCESS= "USER FETCH SUCCESS";
+
+
 
 
 

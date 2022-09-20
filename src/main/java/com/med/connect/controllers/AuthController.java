@@ -21,8 +21,6 @@ import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -30,7 +28,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -430,9 +427,7 @@ public class AuthController {
 
 
 
-          //#######################    RESEND EMAIL LINK #############################
-
-  //########## EMAIL VARIFICATION TOKEN###########
+ //#######################    RESEND EMAIL LINK #############################
   @PostMapping(UrlMappings.RESEND_EMAIL_LINK)
   @ApiOperation(value = "Resend Email Link")
   public ResponseEntity<?> resendEmailLink(@Valid @PathVariable String  username , HttpServletResponse response) {
@@ -466,14 +461,14 @@ public class AuthController {
         //save User is email verified
         this.userRepository.save(currentUser);
 
-      //Creating Email Verify Email Link
-      String emailVerifyLink = "<a href=http://localhost:8080/med-connect/api/auth/verifyTokenEmail?user="+currentUser.getEmail()+"&token="+token+">Conformation Link </a>";
+        //Creating Email Verify Email Link
+        String emailVerifyLink = "<a href=http://localhost:8080/med-connect/api/auth/verifyTokenEmail?user="+currentUser.getEmail()+"&token="+token+">Conformation Link </a>";
 
-      //Send Email Conformation Link
-      this.simpleEmailConfiguration.sendSimpleEmail(currentUser.getEmail(),emailVerifyLink , "Please Conform your Email");
+        //Send Email Conformation Link
+        this.simpleEmailConfiguration.sendSimpleEmail(currentUser.getEmail(),emailVerifyLink , "Please Conform your Email");
 
-      log.info("::::::::: {}     User registered successfully ! But Email Verify is Mandatory !!! ");
-      return ResponseEntity.ok(new MessageResponse("Email link Resend successfully "));
+        log.info("::::::::: {}     User registered successfully ! But Email Verify is Mandatory !!! ");
+        return ResponseEntity.ok(new MessageResponse("Email link Resend successfully "));
 
   }
 
