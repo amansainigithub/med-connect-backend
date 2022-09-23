@@ -26,11 +26,10 @@ public class UserServiceImpl implements UserService {
     private UserRepository userRepository;
 
     @Override
-    public ResponseEntity<?> getUserList(Integer page , Integer size) {
+    public ResponseEntity<?> getMedUserList(Integer page , Integer size) {
         try {
-                Page<User> userList = this.userRepository.findAll(PageRequest.of(page - 1, size, Sort.by(AppConstants.SORT_BY_ID).descending()));
+                Page<User> userList = this.userRepository.findAll(PageRequest.of(page, size , Sort.by(AppConstants.SORT_BY_ID).descending()));
                 return ResponseGenerator.generateSuccessResponse(userList, MessageResponse.USER_FETCH_SUCCESS);
-
         }
         catch (Exception e)
         {

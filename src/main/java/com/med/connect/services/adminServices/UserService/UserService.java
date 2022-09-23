@@ -6,5 +6,5 @@ import org.springframework.stereotype.Component;
 @Component
 public interface UserService {
 
-    public ResponseEntity<?> getUserList(Integer page , Integer size);
+    public ResponseEntity<?> getMedUserList(Integer page , Integer size);
 }

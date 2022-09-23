@@ -17,11 +17,11 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-    @GetMapping(UrlMappings.GET_USER_LIST)
+    @GetMapping(UrlMappings.GET_MED_USER_LIST)
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> getUserList(@RequestParam Integer page , @RequestParam  Integer size)
+    public ResponseEntity<?> getMedUserList(@RequestParam Integer page , @RequestParam  Integer size)
     {
-        return userService.getUserList(page,size);
+        return userService.getMedUserList(page,size);
     }
 
 
