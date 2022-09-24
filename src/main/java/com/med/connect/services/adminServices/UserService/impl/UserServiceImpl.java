@@ -1,5 +1,6 @@
 package com.med.connect.services.adminServices.UserService.impl;
 
+import com.amazonaws.services.cognitoidp.model.UserNotFoundException;
 import com.med.connect.constants.admin.AppConstants;
 import com.med.connect.domain.User;
 import com.med.connect.messageResp.MessageResponse;
@@ -12,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -38,4 +40,26 @@ public class UserServiceImpl implements UserService {
             throw new NullPointerException(MessageResponse.DATA_NOT_FOUND);
         }
     }
+
+    @Override
+    public ResponseEntity<?> medUserLocked(Long id) {
+        try {
+              User user =   this.userRepository.findById(id).orElseThrow(()-> new  UserNotFoundException(MessageResponse.USER_NOT_FOUND) );
+            if(user.getIsLocked())
+                user.setIsLocked(Boolean.FALSE);
+            else
+                user.setIsLocked(Boolean.TRUE);
+
+            this.userRepository.save(user);
+            return ResponseEntity.ok(MessageResponse.SAVE_SUCCESS);
+        }
+        catch (Exception e)
+        {
+            log.error("Exception " , e);
+            return ResponseEntity.badRequest().build();
+
+        }
+    }
+
+
 }

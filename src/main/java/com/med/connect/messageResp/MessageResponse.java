@@ -101,6 +101,10 @@ public class MessageResponse {
 
     public static final String USER_FETCH_SUCCESS= "USER FETCH SUCCESS";
 
+    public static final String USER_NOT_FOUND ="user not found please try again !";
+
+    public static final String SAVE_SUCCESS ="Save Success !";
+
 
 
 

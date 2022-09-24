@@ -61,4 +61,7 @@ public class UrlMappings {
 
     //#################GET USERS LIST #######################
     public static final String GET_MED_USER_LIST=  "/getMedUserList";
+
+    public static final String MED_USER_LOCKED=  "/medUserLocked/{id}";
+
 }

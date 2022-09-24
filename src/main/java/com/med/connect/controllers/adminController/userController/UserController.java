@@ -5,10 +5,7 @@ import com.med.connect.services.adminServices.UserService.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping(UrlMappings.ADMIN_BASE_URL)
@@ -22,6 +19,13 @@ public class UserController {
     public ResponseEntity<?> getMedUserList(@RequestParam Integer page , @RequestParam  Integer size)
     {
         return userService.getMedUserList(page,size);
+    }
+
+    @PostMapping(UrlMappings.MED_USER_LOCKED)
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> medUserLocked(@PathVariable Long id)
+    {
+        return userService.medUserLocked(id);
     }
 
 

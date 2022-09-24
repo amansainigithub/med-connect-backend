@@ -52,6 +52,8 @@ public class User {
 
   private String browser;
 
+  private boolean isLocked = Boolean.FALSE;
+
   private boolean isActive = Boolean.FALSE ;
 
   @Column(nullable = false, updatable = false)
@@ -75,6 +77,14 @@ public class User {
     this.username = username;
     this.email = email;
     this.password = password;
+  }
+
+  public boolean getIsLocked() {
+    return isLocked;
+  }
+
+  public void setIsLocked(boolean isLocked) {
+    this.isLocked = isLocked;
   }
 
   public Long getId() {

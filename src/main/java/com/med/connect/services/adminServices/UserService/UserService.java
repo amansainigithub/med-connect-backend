@@ -7,4 +7,6 @@ import org.springframework.stereotype.Component;
 public interface UserService {
 
     public ResponseEntity<?> getMedUserList(Integer page , Integer size);
+
+    ResponseEntity<?> medUserLocked(Long id);
 }
