@@ -242,9 +242,15 @@ public class AuthController {
     User user =  userRepository.findByEmail(loginRequest.getUsername())
                           .orElseThrow(()-> new UsernameNotFoundException("Uer Not Found user : " + loginRequest.getUsername()));
 
+      if(user.getIsLocked())
+      {
+          //throw new RuntimeException("user is LOCKED | Please check after some Time");
+          return ResponseEntity.badRequest().body(new MessageResponse("LOCKED"));
+      }
+
     if(!user.getEmailVerified())
     {
-      throw new RuntimeException("Email Not Verify ! Please Verify your Email-Id");
+        return ResponseEntity.status(500).body(new MessageResponse("EMAIL NOT VERIFIED"));
     }
 
     Authentication authentication = authenticationManager.authenticate(
