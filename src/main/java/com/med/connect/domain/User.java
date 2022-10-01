@@ -52,6 +52,17 @@ public class User {
 
   private String browser;
 
+  private String profilePicUrl;
+
+  private String profilePicName;
+
+  private String profilePicSize;
+
+  private String profilePicBytes;
+
+  private String profilePicContentType;
+
+
   private boolean isLocked = Boolean.FALSE;
 
   private boolean isActive = Boolean.FALSE ;
@@ -206,5 +217,53 @@ public class User {
 
   public void setBrowser(String browser) {
     this.browser = browser;
+  }
+
+  public String getProfilePicUrl() {
+    return profilePicUrl;
+  }
+
+  public void setProfilePicUrl(String profilePicUrl) {
+    this.profilePicUrl = profilePicUrl;
+  }
+
+  public String getProfilePicName() {
+    return profilePicName;
+  }
+
+  public void setProfilePicName(String profilePicName) {
+    this.profilePicName = profilePicName;
+  }
+
+  public String getProfilePicSize() {
+    return profilePicSize;
+  }
+
+  public void setProfilePicSize(String profilePicSize) {
+    this.profilePicSize = profilePicSize;
+  }
+
+  public String getProfilePicContentType() {
+    return profilePicContentType;
+  }
+
+  public void setProfilePicContentType(String profilePicContentType) {
+    this.profilePicContentType = profilePicContentType;
+  }
+
+  public boolean isLocked() {
+    return isLocked;
+  }
+
+  public void setLocked(boolean locked) {
+    isLocked = locked;
+  }
+
+  public String getProfilePicBytes() {
+    return profilePicBytes;
+  }
+
+  public void setProfilePicBytes(String profilePicBytes) {
+    this.profilePicBytes = profilePicBytes;
   }
 }

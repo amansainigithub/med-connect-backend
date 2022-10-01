@@ -81,7 +81,7 @@ public class AuthController {
     return ResponseEntity.ok(new JwtResponse(jwt,
                          userDetails.getId(), 
                          userDetails.getUsername(), 
-                         userDetails.getEmail(), 
+                         userDetails.getEmail(),
                          roles));
   }
 
@@ -140,8 +140,6 @@ public class AuthController {
 
     user.setRoles(roles);
     userRepository.save(user);
-
-
 
     return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
   }
@@ -245,13 +243,17 @@ public class AuthController {
       if(user.getIsLocked())
       {
           //throw new RuntimeException("user is LOCKED | Please check after some Time");
-          return ResponseEntity.badRequest().body(new MessageResponse("LOCKED"));
+          return ResponseEntity.badRequest().body(new MessageResponse("USER IS LOCKED"));
       }
 
     if(!user.getEmailVerified())
     {
         return ResponseEntity.status(500).body(new MessageResponse("EMAIL NOT VERIFIED"));
     }
+
+      //Set Active User
+      user.setActive(Boolean.TRUE);
+      this.userRepository.save(user);
 
     Authentication authentication = authenticationManager.authenticate(
             new UsernamePasswordAuthenticationToken(user.getUsername(), loginRequest.getPassword()));
@@ -266,7 +268,7 @@ public class AuthController {
 
     return ResponseEntity.ok(new JwtResponse(jwt,
             userDetails.getId(),
-            userDetails.getUsername(),
+            user.getFirstname(),
             userDetails.getEmail(),
             roles));
   }
