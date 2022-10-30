@@ -107,15 +107,22 @@ public class AuthController {
     user.setFirstname(signUpRequest.getFirstname());
     user.setSurname(signUpRequest.getSurname());
 
+     //Set Custom user only admin Role is ALLOWED **
+     Set<String>  roleSet = new HashSet<>();
+     roleSet.add("admin");
+     signUpRequest.setRole(roleSet);
+     log.info("Set Custom user only admin Role is ALLOWED **:::::::::: {}");
+     log.info("By Default Set the role is  ::::::::::::::::::: {}" + signUpRequest.getRole().toString());
 
-    Set<String> strRoles = signUpRequest.getRole();
-    Set<Role> roles = new HashSet<>();
+     Set<String> strRoles = signUpRequest.getRole();
+     Set<Role> roles = new HashSet<>();
 
     if (strRoles == null) {
       Role userRole = roleRepository.findByName(ERole.ROLE_USER)
           .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
       roles.add(userRole);
     } else {
+
       strRoles.forEach(role -> {
         switch (role) {
         case "admin":
@@ -448,11 +455,9 @@ public class AuthController {
                   .body(new MessageResponse("Token is Empty | Something went wrong"));
         }
 
-
         User currentUser = this.userRepository.findByEmail(username).orElseThrow(()-> new UsernameNotFoundException("User Not Found Here"));
 
         //Check If Email Id is Already Verified
-
         if(!currentUser.getEmailVerified())
         {
           return ResponseEntity

@@ -5,7 +5,7 @@ import com.med.connect.bucket.bucketModels.BucketModel;
 import com.med.connect.bucket.bucketService.BucketService;
 import com.med.connect.domain.User;
 import com.med.connect.helper.Validator;
-import com.med.connect.messageResp.MessageResponse;
+import com.med.connect.messageResp.GenericMessageResponse;
 import com.med.connect.repository.UserRepository;
 import com.med.connect.services.publicService.profilePicService.ProfilePicService;
 import lombok.extern.slf4j.Slf4j;
@@ -36,7 +36,7 @@ public class ProfilePicServiceImpl implements ProfilePicService {
           {
            User user =  userRepository.findByEmail(
                             email).orElseThrow(
-                           ()-> new UserNotFoundException(MessageResponse.USER_NOT_FOUND));
+                           ()-> new UserNotFoundException(GenericMessageResponse.USER_NOT_FOUND));
 
            BucketModel bucketModel = bucketService.uploadFile(file);
            user.setProfilePicUrl(bucketModel.getBucketUrl());

@@ -1,6 +1,6 @@
 package com.med.connect.messageResp;
 
-public class MessageResponse {
+public class GenericMessageResponse {
 
     public static final String ROLE_FETCH_SUCCESS = "Role Fetch Success !!";
 
