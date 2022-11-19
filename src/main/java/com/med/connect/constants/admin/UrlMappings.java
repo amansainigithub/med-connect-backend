@@ -68,4 +68,8 @@ public class UrlMappings {
     public static final String UPLOAD_PROFILE_PICTURE=  "/uploadProfilePicture";
 
 
+    //################# USER POST  #######################
+    public static final String SUBMIT_POST=  "/submitPost";
+
+
 }

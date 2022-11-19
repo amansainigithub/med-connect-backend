@@ -1,5 +1,7 @@
 package com.med.connect.domain;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.med.connect.domain.postDomain.MedPosts;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import javax.persistence.*;
@@ -8,6 +10,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 import java.time.LocalDateTime;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -76,10 +79,16 @@ public class User {
   private LocalDateTime lastModifiedDate;
 
   @ManyToMany(fetch = FetchType.LAZY)
-  @JoinTable(name = "user_roles",
-          joinColumns = @JoinColumn(name = "user_id"),
-          inverseJoinColumns = @JoinColumn(name = "role_id"))
+  @JoinTable( name = "user_roles",
+              joinColumns = @JoinColumn(name = "user_id"),
+              inverseJoinColumns = @JoinColumn(name = "role_id") )
   private Set<Role> roles = new HashSet<>();
+
+  @OneToMany(cascade = CascadeType.ALL ,
+              fetch = FetchType.EAGER,
+              mappedBy = "user")
+  @JsonBackReference
+  private List<MedPosts> medPosts;
 
   public User() {
   }
@@ -265,5 +274,13 @@ public class User {
 
   public void setProfilePicBytes(String profilePicBytes) {
     this.profilePicBytes = profilePicBytes;
+  }
+
+  public List<MedPosts> getMedPosts() {
+    return medPosts;
+  }
+
+  public void setMedPosts(List<MedPosts> medPosts) {
+    this.medPosts = medPosts;
   }
 }
