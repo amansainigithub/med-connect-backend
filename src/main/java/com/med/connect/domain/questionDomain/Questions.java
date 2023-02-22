@@ -1,18 +1,24 @@
-package com.med.connect.domain.postDomain;
+package com.med.connect.domain.questionDomain;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.med.connect.domain.User;
 import com.med.connect.domain.base.BaseEntity;
 import lombok.Data;
+
 import javax.persistence.*;
+import java.util.List;
 
 @Entity
 @Data
-public class MedPosts  extends BaseEntity {
+public class Questions  extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
+
+    private String questionTitle;
+
+    private String title;
 
     private String content;
 
@@ -26,20 +32,27 @@ public class MedPosts  extends BaseEntity {
 
     private String byteSize;
 
-    private String currentPostDate;
+    private String questionDate;
 
-    private String currentPostTime;
+    private String questionTime;
 
-    private String currentPostYear;
+    private String questionYear;
 
-    private String currentPostMonth;
+    private String questionMonth;
 
-    private String currentPostDay;
+    private String questionDay;
 
-    private String postType;
+    private String questionType;
+
+    private String tags;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JsonBackReference
     @JoinColumn( referencedColumnName = "id" )
     private User user;
+
+    private String views;
+
+    @OneToMany
+    private List<QuestionViewer> questionViewer;
 }

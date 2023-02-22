@@ -2,6 +2,7 @@ package com.med.connect.domain;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.med.connect.domain.postDomain.MedPosts;
+import com.med.connect.domain.questionDomain.Questions;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import javax.persistence.*;
@@ -89,6 +90,12 @@ public class User {
               mappedBy = "user")
   @JsonBackReference
   private List<MedPosts> medPosts;
+
+  @OneToMany(cascade = CascadeType.ALL ,
+          fetch = FetchType.EAGER,
+          mappedBy = "user")
+  @JsonBackReference
+  private Set<Questions> questions;
 
   public User() {
   }

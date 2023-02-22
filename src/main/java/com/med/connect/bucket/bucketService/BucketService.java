@@ -30,9 +30,13 @@ public class BucketService {
     public BucketModel uploadFile(MultipartFile file) {
        try {
            File fileObj = convertMultiPartFileToFile(file);
-           String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-           s3Client.putObject(new PutObjectRequest(bucketName, fileName, fileObj));
-           fileObj.delete();
+           String fileName = null;
+           if(fileObj != null)
+           {
+               fileName= System.currentTimeMillis() + "_" + file.getOriginalFilename();
+               s3Client.putObject(new PutObjectRequest(bucketName, fileName, fileObj));
+               fileObj.delete();
+           }
 
            //Creating Bucket Models
            return new BucketModel(BucketUrlMappings.BUCKET_URL + fileName,fileName);
@@ -72,13 +76,19 @@ public class BucketService {
 
 
     private File convertMultiPartFileToFile(MultipartFile file) {
-        File convertedFile = new File(file.getOriginalFilename());
-        try (FileOutputStream fos = new FileOutputStream(convertedFile)) {
-            fos.write(file.getBytes());
-        } catch (IOException e) {
-            log.error("Error converting multipartFile to file", e);
-        }
-        return convertedFile;
+       if(file == null || file.isEmpty())
+       {
+           return null;
+       }
+       else {
+           File convertedFile = new File(file.getOriginalFilename());
+           try (FileOutputStream fos = new FileOutputStream(convertedFile)) {
+               fos.write(file.getBytes());
+           } catch (IOException e) {
+               log.error("Error converting multipartFile to file", e);
+           }
+           return convertedFile;
+       }
     }
 
 
