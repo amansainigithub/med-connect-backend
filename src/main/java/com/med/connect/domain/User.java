@@ -67,6 +67,8 @@ public class User {
   private String profilePicContentType;
 
 
+  private String note;
+
   private boolean isLocked = Boolean.FALSE;
 
   private boolean isActive = Boolean.FALSE ;
@@ -289,5 +291,13 @@ public class User {
 
   public void setMedPosts(List<MedPosts> medPosts) {
     this.medPosts = medPosts;
+  }
+
+  public String getNote() {
+    return note;
+  }
+
+  public void setNote(String note) {
+    this.note = note;
   }
 }

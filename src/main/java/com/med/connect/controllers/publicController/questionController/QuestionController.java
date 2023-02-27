@@ -10,6 +10,9 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+import java.util.Map;
+
 @RestController
 @RequestMapping(UrlMappings.ADMIN_BASE_URL)
 public class QuestionController {
@@ -31,7 +34,8 @@ public class QuestionController {
     @PreAuthorize("hasRole('USER') or hasRole('DOCTOR') or hasRole('STUDENT')")
     public ResponseEntity<?> getQuestions(@PathVariable int page) throws Exception
     {
-        Page<Questions> questions =questionService.getQuestions(page);
+//        Thread.sleep(2000);
+        List<Map<Object ,Object>> questions =questionService.getQuestions(page);
         return ResponseEntity.ok(questions);
     }
 

@@ -46,7 +46,7 @@ public class Questions  extends BaseEntity {
 
     private String tags;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne()
     @JsonBackReference
     @JoinColumn( referencedColumnName = "id" )
     private User user;

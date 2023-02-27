@@ -6,9 +6,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+import java.util.Map;
+
 @Component
 public interface QuestionServiceImpl {
     Questions addQuestionService(MultipartFile multipartFile, String jsonNode);
 
-    Page<Questions> getQuestions(int page);
+    List<Map<Object ,Object>> getQuestions(int page);
 }
