@@ -7,18 +7,16 @@ import com.med.connect.domain.User;
 import com.med.connect.domain.questionDomain.Questions;
 import com.med.connect.repository.UserRepository;
 import com.med.connect.repository.questionRepo.QuestionRepo;
+import com.med.connect.repository.votingRepo.VotingUpAndDownRepo;
 import com.med.connect.services.publicService.questionService.impl.QuestionServiceImpl;
 import lombok.extern.slf4j.Slf4j;
-import org.joda.time.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.querydsl.QPageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -41,6 +39,9 @@ public class QuestionService implements QuestionServiceImpl {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private VotingUpAndDownRepo votingUpAndDownRepo;
 
     @Override
     public Questions addQuestionService(MultipartFile file, String jsonNode) {
@@ -94,6 +95,8 @@ public class QuestionService implements QuestionServiceImpl {
             questions.setQuestionTime(String.valueOf(java.time.LocalTime.now()));
 
             Questions response = this.questionRepo.save(questions);
+
+
             return response;
         }
         catch (Exception e)
@@ -103,6 +106,8 @@ public class QuestionService implements QuestionServiceImpl {
         }
         return null;
     }
+
+
 
     @Override
     public   List<Map<Object ,Object>> getQuestions(int page) {
@@ -123,6 +128,8 @@ public class QuestionService implements QuestionServiceImpl {
 
                 //Add Question To List With Single add User Object Also
                 node.put( "questionNode" , ques );
+                node.put("voteUp" , withSuffix(Long.parseLong(ques.getVoteUp())));
+                node.put("voteDown" , withSuffix(Long.parseLong(ques.getVoteDown())));
 
                 LocalDateTime now = LocalDateTime.now();
 
@@ -142,8 +149,17 @@ public class QuestionService implements QuestionServiceImpl {
                 LocalDate end_date = LocalDate.of(now.getYear(),now.getMonth(),now.getDayOfMonth());
                 this.find_difference_year_month_days( start_date , end_date);
 
+                //Vote Up Counter
+                Long voteUpCount = votingUpAndDownRepo.countFromQuestionIdAndVote(String.valueOf(ques.getId()) ,"U");
+                node.put("voteUpCount" , withSuffix( voteUpCount ) );
+
+                //Vote Down Counter
+                long voteDownCount = votingUpAndDownRepo.countFromQuestionIdAndVote(String.valueOf(ques.getId()) ,"D");
+                node.put("voteDownCount" , withSuffix( voteDownCount ) );
+
                 data.add(node);
             }
+
         }
         catch (Exception e)
         {
@@ -151,6 +167,14 @@ public class QuestionService implements QuestionServiceImpl {
             log.error("Something Went Wrong No Data Found Here !!!");
         }
         return data;
+    }
+
+    public static String withSuffix(long count) {
+        if (count < 1000) return "" + count;
+        int exp = (int) (Math.log(count) / Math.log(1000));
+        return String.format("%.1f %c",
+                count / Math.pow(1000, exp),
+                "kMGTPE".charAt(exp-1));
     }
 
 

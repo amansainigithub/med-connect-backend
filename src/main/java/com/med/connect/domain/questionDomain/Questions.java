@@ -46,6 +46,12 @@ public class Questions  extends BaseEntity {
 
     private String tags;
 
+    //Total Number of Votes Up
+    private String voteUp;
+
+    //Total Number of Votes Down
+    private String voteDown;
+
     @ManyToOne()
     @JsonBackReference
     @JoinColumn( referencedColumnName = "id" )
@@ -55,4 +61,8 @@ public class Questions  extends BaseEntity {
 
     @OneToMany
     private List<QuestionViewer> questionViewer;
+
+    @OneToMany(cascade = CascadeType.ALL)
+    private List<VotingUpAndDownInfo> votingUpAndDownInfo;
+
 }

@@ -78,4 +78,9 @@ public class UrlMappings {
     public static final String GET_QUESTIONS=  "/getQuestions/{page}";
 
 
+    //################## VOTE UP AND DOWN #####################
+    public static final String VOTE_UP_AND_DOWN=  "/voteUpAndDown";
+
+
+
 }
