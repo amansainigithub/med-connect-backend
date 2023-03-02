@@ -52,12 +52,13 @@ public class Questions  extends BaseEntity {
     //Total Number of Votes Down
     private String voteDown;
 
+
     @ManyToOne()
     @JsonBackReference
     @JoinColumn( referencedColumnName = "id" )
     private User user;
 
-    private String views;
+    private Long views = 0l;
 
     @OneToMany
     private List<QuestionViewer> questionViewer;

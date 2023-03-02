@@ -5,6 +5,8 @@ import com.med.connect.bucket.bucketModels.BucketModel;
 import com.med.connect.bucket.bucketService.BucketService;
 import com.med.connect.domain.User;
 import com.med.connect.domain.questionDomain.Questions;
+import com.med.connect.domain.questionDomain.VotingUpAndDownInfo;
+import com.med.connect.exception.QuestionIdNotFoundException;
 import com.med.connect.repository.UserRepository;
 import com.med.connect.repository.questionRepo.QuestionRepo;
 import com.med.connect.repository.votingRepo.VotingUpAndDownRepo;
@@ -23,7 +25,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Month;
 import java.time.Period;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -117,49 +118,73 @@ public class QuestionService implements QuestionServiceImpl {
             Page<Questions> questions =  this.questionRepo.findAll(pageable);
 
             List<Questions> lists = questions.getContent();
+
+            //Current Date
+            LocalDate now = LocalDate.now();
             for(Questions ques : lists)
             {
-                //EveryTime Create a Object of Map [Object, object]
+                //EveryTime Create Object of Map [Object, object]
                 Map<Object,Object> node = new HashMap<>();
                 node.put("firstName", ques.getUser().getFirstname());
                 node.put("email", ques.getUser().getEmail());
                 node.put("profilePicture", ques.getUser().getProfilePicUrl());
                 node.put("note", ques.getUser().getNote());
 
+                if(ques.getViews() != null)
+                    node.put("views",withSuffix(ques.getViews()));
+                else
+                    node.put("views",0);
+
+
                 //Add Question To List With Single add User Object Also
                 node.put( "questionNode" , ques );
-                node.put("voteUp" , withSuffix(Long.parseLong(ques.getVoteUp())));
-                node.put("voteDown" , withSuffix(Long.parseLong(ques.getVoteDown())));
 
-                LocalDateTime now = LocalDateTime.now();
+
+                LocalDateTime localDateTime = ques.getCreationDate();
+                this.timeDuration(ques.getCreationDate() , now , node);
+
 
                 //Get Hours , Month and Seconds
-                LocalDateTime creationDate =  ques.getCreationDate();
-                DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
-                 this.find_difference_hours_minutes_seconds(
-                                dtf.format(creationDate).replace("/","-").toString() ,
-                                dtf.format(now).replace("/","-").toString() , node );
+//                LocalDateTime creationDate =  ques.getCreationDate();
+//                DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+//                 this.find_difference_hours_minutes_seconds(
+//                                dtf.format(creationDate).replace("/","-").toString() ,
+//                                dtf.format(now).replace("/","-").toString() , node );
 
                 //Get Year , Month , Days
-                LocalDateTime localDateTime = ques.getCreationDate();
-                LocalDate start_date = LocalDate.of( localDateTime.getYear() ,
-                                        localDateTime.getMonth() ,
-                                        localDateTime.getDayOfMonth() );
+//                LocalDateTime localDateTime = ques.getCreationDate();
+//                LocalDate start_date = LocalDate.of( localDateTime.getYear() ,
+//                                        localDateTime.getMonth() ,
+//                                        localDateTime.getDayOfMonth() );
 
-                LocalDate end_date = LocalDate.of(now.getYear(),now.getMonth(),now.getDayOfMonth());
-                this.find_difference_year_month_days( start_date , end_date);
+//                LocalDate end_date = LocalDate.of(now.getYear(),now.getMonth(),now.getDayOfMonth());
+//                this.find_difference_year_month_days( start_date , end_date);
 
                 //Vote Up Counter
                 Long voteUpCount = votingUpAndDownRepo.countFromQuestionIdAndVote(String.valueOf(ques.getId()) ,"U");
                 node.put("voteUpCount" , withSuffix( voteUpCount ) );
 
                 //Vote Down Counter
-                long voteDownCount = votingUpAndDownRepo.countFromQuestionIdAndVote(String.valueOf(ques.getId()) ,"D");
+                Long voteDownCount = votingUpAndDownRepo.countFromQuestionIdAndVote(String.valueOf(ques.getId()) ,"D");
                 node.put("voteDownCount" , withSuffix( voteDownCount ) );
+
+                //Vote Checker
+                Optional<VotingUpAndDownInfo> voteChecker =  votingUpAndDownRepo.
+                                                    findByUserIdAndQuestionId(
+                                                            String.valueOf(ques.getUser().getId()),
+                                                            String.valueOf(ques.getId()));
+                if(voteChecker.isPresent())
+                {
+                    VotingUpAndDownInfo votingUpAndDownInfo = voteChecker.get();
+                    if(votingUpAndDownInfo.getIsVoter().equals(Boolean.TRUE)){
+                            node.put("voteResult" , votingUpAndDownInfo.getVote());
+                    }
+                }else {
+                    node.put("voteResult" ,null);
+                }
 
                 data.add(node);
             }
-
         }
         catch (Exception e)
         {
@@ -177,6 +202,33 @@ public class QuestionService implements QuestionServiceImpl {
                 "kMGTPE".charAt(exp-1));
     }
 
+    private void timeDuration(LocalDateTime startDate ,
+                              LocalDate now ,
+                              Map<Object , Object> node)
+    {
+        LocalDate start_date = LocalDate.of( startDate.getYear() ,
+                                            startDate.getMonth() ,
+                                            startDate.getDayOfMonth() );
+        Period diff = Period.between( start_date , now );
+        System.out.printf("\nDifference is %d years, %d months and %d days old\n\n",
+                            diff.getYears(), diff.getMonths(), diff.getDays());
+
+        if ( diff.getYears() == 0  )
+        {
+            if( diff.getMonths() == 0)
+            {
+                node.put( "timer" , diff.getDays() +" days ago");
+            }
+            else if ( diff.getMonths() != 0 )
+            {
+                node.put( "timer" ,diff.getMonths() + " months " + diff.getDays() +" days ago");
+            }
+        }else {
+            node.put( "timer" ,  diff.getYears() +" year " +
+                        diff.getMonths() + " months " +
+                        diff.getDays() +" days");
+        }
+    }
 
      private int year = 0;
      private int month = 0;
@@ -352,4 +404,38 @@ public class QuestionService implements QuestionServiceImpl {
             questions.setQuestionType("C + I");
         }
     }
+
+
+    @Override
+    public Map<Object , Object> questionViewsService(Long questionId) {
+        Map<Object , Object > node = new HashMap();
+        Questions questions = null;
+        try {
+              Optional<Questions> optional =   this.questionRepo.findById( questionId );
+              if(optional.isPresent())
+              {
+                questions =  optional.get();
+                if(questions.getViews() == null)
+                   questions.setViews( 1l );
+                else
+                    questions.setViews(questions.getViews() + 1);
+
+                  this.questionRepo.save(questions);
+                  log.error("Question View Counter Update Success :: questionId" + questionId);
+              }
+              else {
+                  throw new QuestionIdNotFoundException("Question Id Not Found " + questionId);
+              }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            log.error("Question Views Counter Not Updated !! ");
+        }
+
+        node.put("question" , questions);
+        this.timeDuration(questions.getCreationDate() , LocalDate.now() , node );
+       return node;
+    }
+
 }

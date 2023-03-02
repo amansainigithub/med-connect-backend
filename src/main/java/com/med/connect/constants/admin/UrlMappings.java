@@ -81,6 +81,9 @@ public class UrlMappings {
     //################## VOTE UP AND DOWN #####################
     public static final String VOTE_UP_AND_DOWN=  "/voteUpAndDown";
 
+    public static final String QUESTION_VIEWS=  "/questionViews/{questionId}";
+
+
 
 
 }

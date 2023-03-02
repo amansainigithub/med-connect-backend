@@ -19,8 +19,8 @@ public class VotingController {
 
     @PostMapping(UrlMappings.VOTE_UP_AND_DOWN)
     @PreAuthorize("hasRole('USER') or hasRole('DOCTOR') or hasRole('STUDENT')")
-    public ResponseEntity<?> addQuestion(@RequestBody VotingUpAndDownPayload votingUpAndDownPayload)
-    {
+    public ResponseEntity<?> addQuestion(@RequestBody VotingUpAndDownPayload votingUpAndDownPayload) throws InterruptedException {
+        Thread.sleep(1000);
         VotingUpAndDownInfo data = votingUpAndDownServiceImpl.votingUpAndDownInfoService(votingUpAndDownPayload);
         return ResponseEntity.ok(data);
     }

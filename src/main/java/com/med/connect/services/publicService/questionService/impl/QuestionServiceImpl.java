@@ -11,4 +11,7 @@ public interface QuestionServiceImpl {
     Questions addQuestionService(MultipartFile multipartFile, String jsonNode);
 
     List<Map<Object ,Object>> getQuestions(int page);
+
+    Map<Object , Object>  questionViewsService(Long questionId);
+
 }

@@ -3,6 +3,7 @@ package com.med.connect.controllers.publicController.questionController;
 import com.med.connect.constants.admin.UrlMappings;
 import com.med.connect.domain.questionDomain.Questions;
 import com.med.connect.services.publicService.questionService.QuestionService;
+import com.med.connect.services.publicService.questionService.impl.QuestionServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -20,10 +21,13 @@ public class QuestionController {
     @Autowired
     private QuestionService questionService;
 
+    @Autowired
+    private QuestionServiceImpl questionServiceImpl;
+
     @PostMapping(UrlMappings.ADD_QUESTIONS)
     @PreAuthorize("hasRole('USER') or hasRole('DOCTOR') or hasRole('STUDENT')")
-    public ResponseEntity<?> addQuestion(@RequestParam(value = "file" , required = false) MultipartFile multipartFile ,
-                                        @RequestParam(value = "jsonNode" , required = false) String jsonNode ) throws Exception
+    public ResponseEntity<?> addQuestion( @RequestParam(value = "file" , required = false) MultipartFile multipartFile ,
+                                          @RequestParam(value = "jsonNode" , required = false) String jsonNode ) throws Exception
     {
         Questions medPosts = questionService.addQuestionService(multipartFile , jsonNode);
         return ResponseEntity.ok(medPosts);
@@ -37,6 +41,13 @@ public class QuestionController {
 //        Thread.sleep(2000);
         List<Map<Object ,Object>> questions =questionService.getQuestions(page);
         return ResponseEntity.ok(questions);
+    }
+
+    @PostMapping(UrlMappings.QUESTION_VIEWS)
+    @PreAuthorize("hasRole('USER') or hasRole('DOCTOR') or hasRole('STUDENT')")
+    public ResponseEntity<?> questionViews(@PathVariable Long questionId  ) throws Exception
+    {
+        return ResponseEntity.ok(questionServiceImpl.questionViewsService(questionId));
     }
 
 }
