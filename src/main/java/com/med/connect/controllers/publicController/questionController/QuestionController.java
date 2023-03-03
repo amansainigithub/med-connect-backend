@@ -33,6 +33,18 @@ public class QuestionController {
         return ResponseEntity.ok(medPosts);
     }
 
+    @PostMapping(UrlMappings.QUESTION_IMAGES)
+    @PreAuthorize("hasRole('USER') or hasRole('DOCTOR') or hasRole('STUDENT')")
+    public ResponseEntity<?> questionImages(
+                                              @PathVariable long questionId,
+                                              @RequestParam(value = "file" , required = true) MultipartFile multipartFile )
+                                              throws Exception
+    {
+        System.out.println("Question ID :: " + questionId);
+        Questions medPosts = questionService.questionImages(questionId , multipartFile);
+        return ResponseEntity.ok(medPosts);
+    }
+
 
     @GetMapping(UrlMappings.GET_QUESTIONS)
     @PreAuthorize("hasRole('USER') or hasRole('DOCTOR') or hasRole('STUDENT')")

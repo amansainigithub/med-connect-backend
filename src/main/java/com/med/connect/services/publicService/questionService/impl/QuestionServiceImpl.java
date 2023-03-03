@@ -14,4 +14,5 @@ public interface QuestionServiceImpl {
 
     Map<Object , Object>  questionViewsService(Long questionId);
 
+    Questions questionImages(long questionId, MultipartFile multipartFile);
 }

@@ -6,6 +6,7 @@ import com.med.connect.domain.base.BaseEntity;
 import lombok.Data;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -21,16 +22,6 @@ public class Questions  extends BaseEntity {
     private String title;
 
     private String content;
-
-    private String fileUrl;
-
-    private String fileName;
-
-    private String fileSize;
-
-    private String contentType;
-
-    private String byteSize;
 
     private String questionDate;
 
@@ -65,5 +56,9 @@ public class Questions  extends BaseEntity {
 
     @OneToMany(cascade = CascadeType.ALL)
     private List<VotingUpAndDownInfo> votingUpAndDownInfo;
+
+    @OneToMany(cascade=CascadeType.ALL)
+    @JsonBackReference
+    private List<QuestionFiles> questionFiles;
 
 }

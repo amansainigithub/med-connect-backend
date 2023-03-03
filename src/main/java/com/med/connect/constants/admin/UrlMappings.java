@@ -73,6 +73,9 @@ public class UrlMappings {
 
     public static final String ADD_QUESTIONS=  "/addQuestions";
 
+    public static final String QUESTION_IMAGES=  "/questionImages/{questionId}";
+
+
     public static final String GET_POSTS=  "/getPosts/{page}";
 
     public static final String GET_QUESTIONS=  "/getQuestions/{page}";

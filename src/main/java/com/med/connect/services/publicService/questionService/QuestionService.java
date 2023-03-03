@@ -4,14 +4,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.med.connect.bucket.bucketModels.BucketModel;
 import com.med.connect.bucket.bucketService.BucketService;
 import com.med.connect.domain.User;
+import com.med.connect.domain.questionDomain.QuestionFiles;
 import com.med.connect.domain.questionDomain.Questions;
 import com.med.connect.domain.questionDomain.VotingUpAndDownInfo;
 import com.med.connect.exception.QuestionIdNotFoundException;
 import com.med.connect.repository.UserRepository;
+import com.med.connect.repository.questionRepo.QuestionFilesRepo;
 import com.med.connect.repository.questionRepo.QuestionRepo;
 import com.med.connect.repository.votingRepo.VotingUpAndDownRepo;
 import com.med.connect.services.publicService.questionService.impl.QuestionServiceImpl;
 import lombok.extern.slf4j.Slf4j;
+import org.aspectj.weaver.patterns.TypePatternQuestions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -39,10 +42,15 @@ public class QuestionService implements QuestionServiceImpl {
     private QuestionRepo questionRepo;
 
     @Autowired
+    private QuestionFilesRepo questionFilesRepo;
+    @Autowired
     private UserRepository userRepository;
 
     @Autowired
     private VotingUpAndDownRepo votingUpAndDownRepo;
+
+//    @Autowired
+//    private QuestionFilesRepo questionFilesRepo;
 
     @Override
     public Questions addQuestionService(MultipartFile file, String jsonNode) {
@@ -64,15 +72,19 @@ public class QuestionService implements QuestionServiceImpl {
             //Check if File is Empty
             if(file != null)
             {
-                log.info("File :: {} " + file);
+                //log.info("File :: {} " + file);
                 //SAVE IMAGE TO S3-BUCKET
-                BucketModel bucketModel =  bucketService.uploadFile(file);
-
-                questions.setByteSize(String.valueOf(file.getBytes()));
-                questions.setFileUrl(bucketModel.getBucketUrl());
-                questions.setFileName(file.getOriginalFilename());
-                questions.setFileSize(String.valueOf(file.getSize()));
-                questions.setContentType(file.getContentType());
+//                BucketModel bucketModel =  bucketService.uploadFile(file);
+//
+//                ArrayList<QuestionFiles> questionFileList = new ArrayList<>();
+//                QuestionFiles questionFiles = new QuestionFiles();
+//
+//                questionFiles.setByteSize(String.valueOf(file.getBytes()));
+//                questionFiles.setFileUrl(bucketModel.getBucketUrl());
+//                questionFiles.setFileName(file.getOriginalFilename());
+//                questionFiles.setFileSize(String.valueOf(file.getSize()));
+//                questionFiles.setContentType(file.getContentType());
+//                questionFileList.add(questionFiles);
 
 //                double kilobytes = (file.getBytes().length / 1024);
 //                System.out.println("KB :: " + kilobytes);
@@ -106,6 +118,50 @@ public class QuestionService implements QuestionServiceImpl {
             log.error(e.getMessage());
         }
         return null;
+    }
+
+
+    @Override
+    public Questions questionImages(long questionId, MultipartFile file) {
+        try {
+            Optional<Questions> optional = this.questionRepo.findById(questionId);
+            if( optional.isPresent() )
+            {
+                Questions questions = optional.get();
+
+                //SAVE IMAGE TO S3-BUCKET
+                BucketModel bucketModel =  bucketService.uploadFile(file);
+
+                ArrayList<QuestionFiles> questionFileList = new ArrayList<>();
+
+                QuestionFiles questionFiles = new QuestionFiles();
+                questionFiles.setByteSize(String.valueOf(file.getBytes()));
+                questionFiles.setFileUrl(bucketModel.getBucketUrl());
+                questionFiles.setFileName(file.getOriginalFilename());
+                questionFiles.setFileSize(String.valueOf(file.getSize()));
+                questionFiles.setContentType(file.getContentType());
+                questionFiles.setQuestionId(questionId);
+                questionFiles.setQuestions(questions);
+
+                questionFileList.add(questionFiles);
+                questions.setQuestionFiles(questionFileList);
+
+                this.questionRepo.save(questions);
+                log.info( " file update success " + file.getOriginalFilename() +
+                          " Question Id :: {} " + questionId);
+
+                return questions;
+            }
+            else {
+                throw new QuestionIdNotFoundException(" Question Id Not Found here  :: {} " + questionId);
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            log.error( e.getMessage() );
+        }
+        return  null;
     }
 
 
@@ -434,8 +490,14 @@ public class QuestionService implements QuestionServiceImpl {
         }
 
         node.put("question" , questions);
+        List<QuestionFiles> questionFilesList =  this.questionFilesRepo.
+                                                        findByQuestionId(questions.getId());
+        node.put("questionFiles",questionFilesList);
+
         this.timeDuration(questions.getCreationDate() , LocalDate.now() , node );
        return node;
     }
+
+
 
 }
